@@ -1,41 +1,53 @@
+#include <algorithm>
 #include <fstream>
+#include <functional>
 #include <iostream>
+#include <vector>
 
 int main()
 {
   std::ifstream in("1.in");
 
-  int count = 0;
-  int caloriesHeldByCurrentElf = 0;
-  int elfWithMostCalories = 0;
-  int mostCaloriesHeldByElf = 0;
+  std::vector<int> elves;
 
+  bool newElf = true;
   std::string s;
   while (in) {
+    if (newElf) {
+      elves.push_back(0);
+      newElf = false;
+    }
+
     std::getline(in, s);
 
     if (s.empty() || in.fail()) {
 #ifdef VERBOSE
-      std::cout << "Elf " << ++count << " is holding " << caloriesHeldByCurrentElf << " calories" << std::endl;
+      std::cout << "Elf " << elves.size() << " is holding " << elves.back() << " calories" << std::endl;
 #endif
-      if (caloriesHeldByCurrentElf > mostCaloriesHeldByElf) {
-        elfWithMostCalories = count;
-        mostCaloriesHeldByElf = caloriesHeldByCurrentElf;
-      }
-
-      caloriesHeldByCurrentElf = 0;
+      newElf = true;
     } else {
 #ifdef VERBOSE
-      std::cout << caloriesHeldByCurrentElf << "+" << std::stoi(s);
+      std::cout << elves.back() << "+" << std::stoi(s);
 #endif
-      caloriesHeldByCurrentElf += std::stoi(s);
+      elves.back() += std::stoi(s);
 #ifdef VERBOSE
-      std::cout << "=" << caloriesHeldByCurrentElf << std::endl;
+      std::cout << "=" << elves.back() << std::endl;
 #endif
     }
   }
 
-  std::cout << std::endl << "Elf " << elfWithMostCalories << " is holding the most calories (" << mostCaloriesHeldByElf << ")" << std::endl << std::endl;
+  // Note: solution does not care about elves' identity, so don't worry about knowing which elf is which
+  std::sort(elves.begin(), elves.end(), std::greater<int>());
+
+  std::cout << std::endl << "Calorie counts for elves with the most calories: " << std::endl;
+
+  int total = 0;
+  for (int i=0; (i < 3) && (i < elves.size()); ++i) {
+    std::cout << "  " << elves.at(i) << std::endl;
+    total += elves.at(i);
+  }
+
+  std::cout << std::endl << "Which totals " << total << std::endl;
 
   return 0;
 }
