@@ -1,0 +1,9 @@
+# build
+a.out
+
+# Mac
+.DS_Store
+
+# VS Code
+.vscode
+.history
