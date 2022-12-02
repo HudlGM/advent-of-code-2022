@@ -7,6 +7,7 @@ elif [ $# -eq 2 ] && [ $2 == "v" ]; then
   VERBOSE="-D VERBOSE"
 fi
 
-g++ $VERBOSE -Wall $1.cpp
+if g++ $VERBOSE -Wall $1.cpp; then
+  ./a.out
+fi
 
-./a.out
