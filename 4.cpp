@@ -61,6 +61,28 @@ bool hasFullyContainedRange(const Range &e1, const Range &e2)
   return false;
 }
 
+bool isContainedInRange(const int &x, const Range &r)
+{
+  return (x >= r.start) && (x <= r.end);
+}
+
+bool hasAnyOverlap(const Range &e1, const Range &e2)
+{
+  for (int i=e1.start; i <= e1.end; ++i) {
+    if (isContainedInRange(i, e2)) {
+#ifdef VERBOSE
+      std::cout << std::endl << "  Has some overlap";
+#endif
+      return true;
+    }
+  }
+
+#ifdef VERBOSE
+      std::cout << std::endl << "  Does not have any overlap";
+#endif
+  return false;
+}
+
 int main()
 {
   std::ifstream in("4.in");
@@ -70,6 +92,7 @@ int main()
   Range e2; // second elf in pair
 
   int countPairsWithFullyContainedRange = 0;
+  int countPairsWithAnyOverlap = 0;
 
   std::getline(in, l);
 
@@ -78,6 +101,9 @@ int main()
 
     if (hasFullyContainedRange(e1, e2)) {
       countPairsWithFullyContainedRange++;
+      countPairsWithAnyOverlap++; // fully contained range does include overlap
+    } else if (hasAnyOverlap(e1, e2)) {
+      countPairsWithAnyOverlap++;
     }
 
 #ifdef VERBOSE
@@ -88,6 +114,7 @@ int main()
   }
 
   std::cout << std::endl << "Pairs with fully contained range: " << countPairsWithFullyContainedRange << std::endl;
+  std::cout << std::endl << "Pairs with any overlap: " << countPairsWithAnyOverlap << std::endl;
 
   return 0;
 }
