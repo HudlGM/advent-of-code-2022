@@ -7,7 +7,7 @@ elif [ $# -eq 2 ] && [[ "$2" == "v" ]]; then
   VERBOSE="-D VERBOSE"
 fi
 
-if g++ $VERBOSE -Wall $1.cpp; then
+if g++ $VERBOSE -Wall -Wextra -Werror -Wpedantic $1.cpp; then
   ./a.out
 fi
 
