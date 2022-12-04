@@ -6,7 +6,7 @@
 
 int main()
 {
-  std::ifstream in("1.in");
+  std::ifstream in("puzzles/1/input.txt");
 
   std::vector<int> elves;
 

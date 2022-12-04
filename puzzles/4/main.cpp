@@ -85,7 +85,7 @@ bool hasAnyOverlap(const Range &e1, const Range &e2)
 
 int main()
 {
-  std::ifstream in("4.in");
+  std::ifstream in("puzzles/4/input.txt");
 
   std::string l; // line
   Range e1; // first elf in pair

@@ -46,7 +46,7 @@ int getPriority(const char &c)
 
 int main()
 {
-  std::ifstream in("3.in");
+  std::ifstream in("puzzles/3/input.txt");
 
   std::string s; // rucksack contents
   std::string c1; // compartment 1

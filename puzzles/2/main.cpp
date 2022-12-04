@@ -151,7 +151,7 @@ int computeScore(const Type &opponent, const Type &player)
 
 int main()
 {
-  std::ifstream in("2.in");
+  std::ifstream in("puzzles/2/input.txt");
 
   int totalUsingPart1Strategy = 0;
   int totalUsingPart2Strategy = 0;
