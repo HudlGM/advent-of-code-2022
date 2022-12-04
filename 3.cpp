@@ -52,7 +52,9 @@ int main()
   std::string c1; // compartment 1
   std::string c2; // compartment 2
 
+#ifdef VERBOSE
   int groupCount = 0;
+#endif
   std::vector<std::string> group;
 
   int prioritySumPart1 = 0;
