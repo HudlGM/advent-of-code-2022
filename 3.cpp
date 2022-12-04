@@ -1,10 +1,31 @@
 #include <fstream>
 #include <iostream>
+#include <vector>
 
-char findSharedItem(const std::string &c1, const std::string &c2)
+char findMisplacedItem(const std::string &c1, const std::string &c2)
 {
   for (const char &c : c1) {
     if (c2.find(c) != std::string::npos) {
+      return c;
+    }
+  }
+
+  return '\0';
+}
+
+char findBadge(const std::vector<std::string> &group)
+{
+  for (const char &c : group.at(0)) {
+    if (
+      (group.at(1).find(c) != std::string::npos) &&
+      (group.at(2).find(c) != std::string::npos)
+    ) {
+#ifdef VERBOSE
+      std::cout << "badge is " << c << std::endl;
+      std::cout << "  " << group.at(0) << std::endl;
+      std::cout << "  " << group.at(1) << std::endl;
+      std::cout << "  " << group.at(2) << std::endl;
+#endif
       return c;
     }
   }
@@ -31,7 +52,11 @@ int main()
   std::string c1; // compartment 1
   std::string c2; // compartment 2
 
-  int prioritySum = 0;
+  int groupCount = 0;
+  std::vector<std::string> group;
+
+  int prioritySumPart1 = 0;
+  int prioritySumPart2 = 0;
 
   std::getline(in, s);
 
@@ -42,12 +67,23 @@ int main()
     // second half second compartment
     c2 = s.substr(s.length()/2);
 
-    prioritySum += getPriority(findSharedItem(c1,c2));
+    prioritySumPart1 += getPriority(findMisplacedItem(c1,c2));
+
+    group.push_back(s);
+
+    if (group.size() == 3) {
+#ifdef VERBOSE
+      std::cout << "Group " << ++groupCount << " ";
+#endif
+      prioritySumPart2 += getPriority(findBadge(group));
+      group.clear();
+    }
 
     std::getline(in, s);
   }
 
-  std::cout << std::endl << "priority sum: " << prioritySum << std::endl;
+  std::cout << std::endl << "priority sum part 1: " << prioritySumPart1 << std::endl;
+  std::cout << std::endl << "priority sum part 2: " << prioritySumPart2 << std::endl;
 
   return 0;
 }
