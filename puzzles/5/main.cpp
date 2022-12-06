@@ -7,6 +7,8 @@
 const char CHAR_SPACE{' '};
 const char CHAR_LEFT_SQUARE_BRACKET{'['};
 
+const std::string INPUT{"puzzles/5/input.txt"};
+
 void reverseStack(std::deque<char> &s)
 {
   std::deque<char> temp;
@@ -19,7 +21,7 @@ void reverseStack(std::deque<char> &s)
   s = temp;
 }
 
-void doMoveOperation(const std::string &op, std::vector<std::deque<char>> &stacks)
+void doMoveOperation(const std::string &op, std::vector<std::deque<char>> &stacks, const bool &retainStackOrderOnMove = false)
 {
   // "move n from src to dst"
   //      0 1    2   3  4
@@ -38,15 +40,32 @@ void doMoveOperation(const std::string &op, std::vector<std::deque<char>> &stack
   std::cout << "Moving " << n << " from " << src << " to " << dst << std::endl;
 #endif
 
-  for (int i=0; i < n; ++i) {
-    stacks.at(dst-1).push_front(stacks.at(src-1).front());
-    stacks.at(src-1).pop_front();
+  std::deque<char> &srcStack = stacks.at(src-1);
+  std::deque<char> &dstStack = stacks.at(dst-1);
+
+  if (retainStackOrderOnMove) {
+    std::deque<char> temp;
+
+    for (int i=0; i < n; ++i) {
+      temp.push_front(srcStack.front());
+      srcStack.pop_front();
+    }
+
+    for (int i=0; i < n; ++i) {
+      dstStack.push_front(temp.front());
+      temp.pop_front();
+    }
+  } else {
+    for (int i=0; i < n; ++i) {
+      dstStack.push_front(srcStack.front());
+      srcStack.pop_front();
+    }
   }
 }
 
-int main()
+void part1()
 {
-  std::ifstream in("puzzles/5/input.txt");
+  std::ifstream in(INPUT);
 
   std::vector<std::deque<char>> stacks;
 
@@ -110,11 +129,90 @@ int main()
     std::getline(in, l);
   }
 
-  std::cout << "Tops of stacks: ";
+  std::cout << "Part 1 tops of stacks: ";
   for (std::deque<char> &s : stacks) {
     std::cout << s.front();
   }
   std::cout << std::endl;
+}
+
+void part2()
+{
+  std::ifstream in(INPUT);
+
+  std::vector<std::deque<char>> stacks;
+
+  std::string l; // line
+
+  std::getline(in, l);
+
+  // build stack representation upside-down
+  while (in) {
+    if (l.empty()) {
+      // this is the break between the stack representation and move operations, no-op
+    } else if (l.at(0) == CHAR_LEFT_SQUARE_BRACKET) {
+      // this is part of the stack representation
+      size_t pos = 0;
+      size_t currentStack = 0;
+      while (pos < l.size()) {
+        if ((pos + 3) <= l.size()) {
+          if (stacks.size() < (currentStack+1)) {
+            // initialize this stack
+            stacks.push_back(std::deque<char>());
+          }
+
+          // consume up to four characters, second character may be item
+          const char item = l.at(pos + 1);
+          pos += 4;
+
+          if (item != CHAR_SPACE) {
+            stacks[currentStack].push_front(item);
+          }
+
+          currentStack++;
+        } else {
+          break;
+        }
+      }
+    } else if (l.at(0) == CHAR_SPACE) {
+      // this is the stack labels part of the stack representation
+
+      // flip stack representation
+      for (std::deque<char> &s : stacks) {
+        reverseStack(s);
+      }
+
+#ifdef VERBOSE
+      std::cout << "Stacks before moves:" << std::endl;
+      int i = 1;
+      for (std::deque<char> &s : stacks) {
+        std::cout << i++ << ": ";
+        for (const char &c : s) {
+          std::cout << c;
+        }
+        std::cout << std::endl;
+      }
+      std::cout << std::endl;
+#endif
+    } else if (l.at(0) != CHAR_LEFT_SQUARE_BRACKET) {
+      // this is a move operation
+      doMoveOperation(l, stacks, true);
+    }
+
+    std::getline(in, l);
+  }
+
+  std::cout << "Part 2 tops of stacks: ";
+  for (std::deque<char> &s : stacks) {
+    std::cout << s.front();
+  }
+  std::cout << std::endl;
+}
+
+int main()
+{
+  part1();
+  part2();
 
   return 0;
 }
