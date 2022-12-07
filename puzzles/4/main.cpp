@@ -78,7 +78,7 @@ bool hasAnyOverlap(const Range &e1, const Range &e2)
   }
 
 #ifdef VERBOSE
-      std::cout << std::endl << "  Does not have any overlap";
+  std::cout << std::endl << "  Does not have any overlap";
 #endif
   return false;
 }
