@@ -42,7 +42,7 @@ int main()
   std::cout << std::endl << "Calorie counts for elves with the most calories: " << std::endl;
 
   int total = 0;
-  for (int i=0; (i < 3) && (i < static_cast<int>(elves.size())); ++i) {
+  for (size_t i=0; (i < 3) && (i < elves.size()); ++i) {
     std::cout << "  " << elves.at(i) << std::endl;
     total += elves.at(i);
   }

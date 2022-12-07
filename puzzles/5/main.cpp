@@ -9,6 +9,11 @@ const char CHAR_LEFT_SQUARE_BRACKET{'['};
 
 const std::string INPUT{"puzzles/5/input.txt"};
 
+void reverseStack(std::deque<char> &s);
+void doMoveOperation(const std::string &op, std::vector<std::deque<char>> &stacks, const bool &retainStackOrderOnMove = false);
+void part1();
+void part2();
+
 void reverseStack(std::deque<char> &s)
 {
   std::deque<char> temp;
@@ -21,7 +26,7 @@ void reverseStack(std::deque<char> &s)
   s = temp;
 }
 
-void doMoveOperation(const std::string &op, std::vector<std::deque<char>> &stacks, const bool &retainStackOrderOnMove = false)
+void doMoveOperation(const std::string &op, std::vector<std::deque<char>> &stacks, const bool &retainStackOrderOnMove)
 {
   // "move n from src to dst"
   //      0 1    2   3  4
@@ -40,8 +45,8 @@ void doMoveOperation(const std::string &op, std::vector<std::deque<char>> &stack
   std::cout << "Moving " << n << " from " << src << " to " << dst << std::endl;
 #endif
 
-  std::deque<char> &srcStack = stacks.at(src-1);
-  std::deque<char> &dstStack = stacks.at(dst-1);
+  std::deque<char> &srcStack = stacks.at(static_cast<size_t>(src-1));
+  std::deque<char> &dstStack = stacks.at(static_cast<size_t>(dst-1));
 
   if (retainStackOrderOnMove) {
     std::deque<char> temp;

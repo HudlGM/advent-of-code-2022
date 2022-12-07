@@ -15,6 +15,13 @@ enum class Outcome
   WIN,
 };
 
+Type readType(const char &c);
+Outcome readDesiredOutcome(const char &c);
+Type selectTypeForDesiredOutcome(const Type &opponent, const Outcome &desiredOutcome);
+int typeToPoints(const Type &t);
+int playerTotalForMatch(const Type &opponent, const Type &player);
+int computeScore(const Type &opponent, const Type &player);
+
 Type readType(const char &c)
 {
   if ((c == 'A') || (c == 'X')) {

@@ -16,6 +16,11 @@ struct Range
   int end;
 };
 
+void parseSectionRanges(const std::string &l, Range &e1, Range &e2);
+bool hasFullyContainedRange(const Range &e1, const Range &e2);
+bool isContainedInRange(const int &x, const Range &r);
+bool hasAnyOverlap(const Range &e1, const Range &e2);
+
 void parseSectionRanges(const std::string &l, Range &e1, Range &e2)
 {
 #ifdef VERBOSE

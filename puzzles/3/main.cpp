@@ -2,6 +2,10 @@
 #include <iostream>
 #include <vector>
 
+char findMisplacedItem(const std::string &c1, const std::string &c2);
+char findBadge(const std::vector<std::string> &group);
+int getPriority(const char &c);
+
 char findMisplacedItem(const std::string &c1, const std::string &c2)
 {
   for (const char &c : c1) {

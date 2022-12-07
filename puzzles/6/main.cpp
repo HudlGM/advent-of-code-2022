@@ -3,6 +3,8 @@
 #include <deque>
 #include <unordered_set>
 
+size_t uniqueSize(const std::deque<char> &d);
+
 size_t uniqueSize(const std::deque<char> &d)
 {
   // this seems terribly inefficient
