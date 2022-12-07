@@ -17,28 +17,54 @@ int main()
 {
   std::ifstream in("puzzles/6/input.txt");
 
-  std::string l; // line
+  const size_t PACKET_MARKER_LENGTH{4};
+  const size_t MESSAGE_MARKER_LENGTH{14};
+  bool foundStartMarkerForPacket = false;
+  int packetStart = 0;
+  std::deque<char> packetSearchSeq;
 
-  int count = 0;
-  std::deque<char> seq;
+  bool foundStartMarkerForMessage = false;
+  int messageStart = 0;
+  std::deque<char> messageSearchSeq;
 
-  seq.push_back(in.get());
+  char c = in.get();
 
   while (in) {
-    count++;
+    if (foundStartMarkerForPacket == false) {
+      packetStart++;
 
-    while (seq.size() > 4) {
-      seq.pop_front();
+      packetSearchSeq.push_back(c);
+      while (packetSearchSeq.size() > PACKET_MARKER_LENGTH) {
+        packetSearchSeq.pop_front();
+      }
+
+      if (uniqueSize(packetSearchSeq) == PACKET_MARKER_LENGTH) {
+        foundStartMarkerForPacket = true;
+      }
     }
 
-    if (uniqueSize(seq) == 4) {
+    if (foundStartMarkerForMessage == false) {
+      messageStart++;
+
+      messageSearchSeq.push_back(c);
+      while (messageSearchSeq.size() > MESSAGE_MARKER_LENGTH) {
+        messageSearchSeq.pop_front();
+      }
+
+      if (uniqueSize(messageSearchSeq) == MESSAGE_MARKER_LENGTH) {
+        foundStartMarkerForMessage = true;
+      }
+    }
+
+    if (foundStartMarkerForPacket && foundStartMarkerForMessage) {
       break;
     }
 
-    seq.push_back(in.get());
+    c = in.get();
   }
 
-  std::cout << "count: " << count << std::endl;
+  std::cout << "packetStart: " << packetStart << std::endl;
+  std::cout << "messageStart: " << messageStart << std::endl;
 
   return 0;
 }
