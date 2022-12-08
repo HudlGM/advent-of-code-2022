@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <vector>
@@ -5,6 +6,8 @@
 const std::string DIR_ROOT{"/"};
 const std::string DIR_PARENT{".."};
 const size_t ONE_HUNDRED_THOUSAND{100000};
+const size_t TOTAL_DISK_SPACE{70000000};
+const size_t SPACE_REQUIRED_FOR_UPDATE{30000000};
 
 class File
 {
@@ -100,6 +103,35 @@ public:
     return total;
   }
 
+  static std::vector<size_t> dirSizes(const Directory &top)
+  {
+    std::vector<size_t> result = { top.size() };
+
+    for (const Directory &d : top._dirs) {
+      const std::vector<size_t> sizes = dirSizes(d);
+      for (const size_t &size : sizes) {
+        result.push_back(size);
+      }
+    }
+
+    return result;
+  }
+
+  static size_t smallestDirLargerThan(const size_t &minimumSize, const Directory& top)
+  {
+    std::vector<size_t> sizes = dirSizes(top);
+
+    std::sort(sizes.begin(), sizes.end());
+
+    for (const size_t &size : sizes) {
+      if (size >= minimumSize) {
+        return size;
+      }
+    }
+
+    return 0;
+  }
+
 private:
   Directory *_parent;
   std::vector<Directory> _dirs;
@@ -147,6 +179,8 @@ int main()
   }
 
   std::cout << "Sum of dirs larger than " << ONE_HUNDRED_THOUSAND << ": " << Directory::sumOfDirsLargerThan(ONE_HUNDRED_THOUSAND, root) << std::endl;
+
+  std::cout << "Size of smallest directory which would allow update to complete: " << Directory::smallestDirLargerThan(SPACE_REQUIRED_FOR_UPDATE - (TOTAL_DISK_SPACE - root.size()), root) << std::endl;
 
   return 0;
 }
