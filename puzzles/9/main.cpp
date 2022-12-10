@@ -3,7 +3,8 @@
 #include <vector>
 #include <set>
 
-const std::string FILENAME_EXAMPLE{"puzzles/9/example.txt"};
+const std::string FILENAME_EXAMPLE_1{"puzzles/9/example1.txt"};
+const std::string FILENAME_EXAMPLE_2{"puzzles/9/example2.txt"};
 const std::string FILENAME_INPUT{"puzzles/9/input.txt"};
 
 const std::pair<int,int> s = { 0,  0}; // starting position
@@ -13,15 +14,14 @@ const std::pair<int,int> L = {-1,  0}; // left
 const std::pair<int,int> R = { 1,  0}; // right
 const std::pair<int,int> n = { 0,  0}; // no move
 
-size_t countPositionsVisitedByTail(const std::string &filename);
-void move(const std::pair<int,int> &d, std::pair<int,int> &H, std::pair<int,int> &T);
+size_t countPositionsVisitedByTail(const std::string &filename, const size_t &knotCount);
+void move(const std::pair<int,int> &d, std::vector<std::pair<int,int>> &knots);
 
-size_t countPositionsVisitedByTail(const std::string &filename)
+size_t countPositionsVisitedByTail(const std::string &filename, const size_t &knotCount)
 {
   std::set<std::pair<int,int>> positionsVisitedByTail = { s };
 
-  std::pair<int,int> T = s; // current position of tail
-  std::pair<int,int> H = s; // current position of head
+  std::vector<std::pair<int,int>> knots(knotCount, s); // current positions of knots
 
   std::ifstream in(filename);
   std::string l; // line
@@ -53,52 +53,81 @@ size_t countPositionsVisitedByTail(const std::string &filename)
     const int steps = std::stoi(l.substr(2));
 
     for (int i=0; i < steps; ++i) {
-      move(d, H, T);
-      positionsVisitedByTail.insert(T);
+      move(d, knots);
+      positionsVisitedByTail.insert(knots.back());
     }
 
     std::getline(in, l);
   }
 
+#ifdef VERBOSE
+  std::cout << "START" << std::endl;
+  for (const std::pair<int,int> &p : positionsVisitedByTail) {
+    std::cout << "(" << p.first << "," << p.second << ")" << std::endl;
+  }
+  std::cout << "END - " << positionsVisitedByTail.size() << std::endl;
+#endif
+
   return positionsVisitedByTail.size();
 }
 
-void move(const std::pair<int,int> &d, std::pair<int,int> &H, std::pair<int,int> &T)
+void move(const std::pair<int,int> &d, std::vector<std::pair<int,int>> &knots)
 {
-  H.first += d.first;
-  H.second += d.second;
-
-  const int absoluteDistanceX = std::abs(H.first-T.first);
-  const int absoluteDistanceY = std::abs(H.second-T.second);
-
-  if (
-    (absoluteDistanceX <= 1) &&
-    (absoluteDistanceY <= 1)
-   ) {
-    // H and T already touching, no move required
+  if (knots.size() == 0) {
     return;
   }
 
-  if (absoluteDistanceX == 2) {
-    T.first += d.first; // move in same direction
+  knots.front().first += d.first;
+  knots.front().second += d.second;
 
-    if (absoluteDistanceY == 1) {
-      T.second = H.second; // also move diagonally
-    }
-  } else if (absoluteDistanceY == 2) {
-    T.second += d.second; // move in same direction
+  std::pair<int,int> lastMove = d;
 
-    if (absoluteDistanceX == 1) {
-      T.first = H.first; // also move diagonally
+  for (size_t i=1; i < knots.size(); ++i) {
+    std::pair<int,int> &prev = knots.at(i-1);
+    std::pair<int,int> &next = knots.at(i);
+
+    const std::pair<int,int> startingPositionOfNext = next;
+
+    const int absoluteDistanceX = std::abs(prev.first-next.first);
+    const int absoluteDistanceY = std::abs(prev.second-next.second);
+
+    if (
+      (absoluteDistanceX <= 1) &&
+      (absoluteDistanceY <= 1)
+    ) {
+      // prev and next already touching, no more moves required
+      return;
     }
+
+    if (absoluteDistanceX == 2) {
+      // move in same direction
+      next.first += lastMove.first;
+
+      if (absoluteDistanceY == 1) {
+        next.second = prev.second; // also move diagonally
+      }
+    }
+
+    if (absoluteDistanceY == 2) {
+      next.second += lastMove.second; // move in same direction
+
+      if (absoluteDistanceX == 1) {
+        next.first = prev.first; // also move diagonally
+      }
+    }
+
+    lastMove.first = next.first - startingPositionOfNext.first;
+    lastMove.second = next.second - startingPositionOfNext.second;
   }
 }
 
 int main()
 {
-  assert(countPositionsVisitedByTail(FILENAME_EXAMPLE) == 13);
+  assert(countPositionsVisitedByTail(FILENAME_EXAMPLE_1, 2) == 13);
+  assert(countPositionsVisitedByTail(FILENAME_EXAMPLE_2, 10) == 36);
 
-  std::cout << "positions visited by tail: " << countPositionsVisitedByTail(FILENAME_INPUT) << std::endl;
+  std::cout << "positions visited by tail (2 knots): " << countPositionsVisitedByTail(FILENAME_INPUT, 2) << std::endl;
+  std::cout << "positions visited by tail (10 knots): " << countPositionsVisitedByTail(FILENAME_INPUT, 10) << std::endl;
 
   return 0;
 }
