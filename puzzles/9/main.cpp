@@ -100,8 +100,7 @@ void move(const std::pair<int,int> &d, std::vector<std::pair<int,int>> &knots)
     }
 
     if (absoluteDistanceX == 2) {
-      // move in same direction
-      next.first += lastMove.first;
+      next.first += lastMove.first; // move in same direction
 
       if (absoluteDistanceY == 1) {
         next.second = prev.second; // also move diagonally
