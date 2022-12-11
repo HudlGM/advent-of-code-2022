@@ -3,6 +3,8 @@
 #include <cmath>
 #include <fstream>
 #include <iostream>
+#include <limits>
+#include <numeric>
 #include <vector>
 
 const std::string FILENAME_EXAMPLE{"puzzles/11/example.txt"};
@@ -35,47 +37,46 @@ struct Monkey
   {
   }
 
-  void inspectAndTest(std::vector<Monkey> &monkeys)
+  void inspectAndTest(std::vector<Monkey> &monkeys, const long &worryDivisor, const long &productOfAllTestDivisors)
   {
     itemInspectionCount++;
 
     // inspect
-    const int oldWorryLevel = items.at(0);
+    const long oldWorryLevel = items.at(0);
     items.erase(items.begin());
 
-    int newWorryLevel = oldWorryLevel;
+    long newWorryLevel = oldWorryLevel;
     if (inspectExponent != 1) {
       newWorryLevel = std::pow(oldWorryLevel, inspectExponent);
     } else if (inspectMultiplier != 1) {
       newWorryLevel = oldWorryLevel * inspectMultiplier;
-    } else if (inspectAdd) {
+    } else if (inspectAdd != 0) {
       newWorryLevel = oldWorryLevel + inspectAdd;
     }
 
-    // inspect done
-    newWorryLevel /= 3;
+    newWorryLevel /= worryDivisor;
 
     // actually do test and pass to next monkey
     if ((newWorryLevel % testDivisor) == 0) {
-      monkeys.at(static_cast<size_t>(passOnTrue)).items.push_back(newWorryLevel);
+      monkeys.at(static_cast<size_t>(passOnTrue)).items.push_back(newWorryLevel % productOfAllTestDivisors);
     } else {
-      monkeys.at(static_cast<size_t>(passOnFalse)).items.push_back(newWorryLevel);
+      monkeys.at(static_cast<size_t>(passOnFalse)).items.push_back(newWorryLevel % productOfAllTestDivisors);
     }
   }
 
-  std::vector<int> items;
-  int itemInspectionCount;
-  int inspectExponent;
-  int inspectMultiplier;
-  int inspectAdd;
-  int testDivisor;
-  int passOnTrue;
-  int passOnFalse;
+  std::vector<long> items;
+  long itemInspectionCount;
+  long inspectExponent;
+  long inspectMultiplier;
+  long inspectAdd;
+  long testDivisor;
+  long passOnTrue;
+  long passOnFalse;
 };
 
-int computeLevelOfMonkeyBusiness(const std::string &filename);
+long computeLevelOfMonkeyBusiness(const std::string &filename, const long &totalRounds, const long &worryDivisor);
 
-int computeLevelOfMonkeyBusiness(const std::string &filename)
+long computeLevelOfMonkeyBusiness(const std::string &filename, const long &totalRounds, const long &worryDivisor)
 {
   std::vector<Monkey> monkeys;
 
@@ -91,33 +92,33 @@ int computeLevelOfMonkeyBusiness(const std::string &filename)
       std::string::size_type pos = lPartial.find(COMMA);
       while (pos != std::string::npos) {
         // consume next item
-        monkeys.back().items.push_back(std::stoi(lPartial.substr(0, pos)));
+        monkeys.back().items.push_back(std::stol(lPartial.substr(0, pos)));
         lPartial = lPartial.substr(pos+1);
         pos = lPartial.find(COMMA);
       }
 
       // consume last item
-      monkeys.back().items.push_back(std::stoi(lPartial));
+      monkeys.back().items.push_back(std::stol(lPartial));
     } else if (l.find(PREFIX_OPERATION_NEW_EQUALS_OLD_TIMES) != std::string::npos) {
       if (l.substr(PREFIX_OPERATION_NEW_EQUALS_OLD_TIMES.size()) == OLD) {
         // set inspect exponent
         monkeys.back().inspectExponent = 2;
       } else {
         // set inspect multiplier
-        monkeys.back().inspectMultiplier = std::stoi(l.substr(PREFIX_OPERATION_NEW_EQUALS_OLD_TIMES.size()));
+        monkeys.back().inspectMultiplier = std::stol(l.substr(PREFIX_OPERATION_NEW_EQUALS_OLD_TIMES.size()));
       }
     } else if (l.find(PREFIX_OPERATION_NEW_EQUALS_OLD_PLUS) != std::string::npos) {
       // set inspect add
-      monkeys.back().inspectAdd = std::stoi(l.substr(PREFIX_OPERATION_NEW_EQUALS_OLD_PLUS.size()));
+      monkeys.back().inspectAdd = std::stol(l.substr(PREFIX_OPERATION_NEW_EQUALS_OLD_PLUS.size()));
     } else if (l.find(PREFIX_TEST_DIVISIBLE_BY) != std::string::npos) {
       // set test divisor
-      monkeys.back().testDivisor = std::stoi(l.substr(PREFIX_TEST_DIVISIBLE_BY.size()));
+      monkeys.back().testDivisor = std::stol(l.substr(PREFIX_TEST_DIVISIBLE_BY.size()));
     } else if (l.find(PREFIX_IF_TRUE_THROW_TO_MONKEY) != std::string::npos) {
       // set which monkey to pass to when test is true
-      monkeys.back().passOnTrue = std::stoi(l.substr(PREFIX_IF_TRUE_THROW_TO_MONKEY.size()));
+      monkeys.back().passOnTrue = std::stol(l.substr(PREFIX_IF_TRUE_THROW_TO_MONKEY.size()));
     } else if (l.find(PREFIX_IF_FALSE_THROW_TO_MONKEY) != std::string::npos) {
       // set which monkey to pass to when test is false
-      monkeys.back().passOnFalse = std::stoi(l.substr(PREFIX_IF_FALSE_THROW_TO_MONKEY.size()));
+      monkeys.back().passOnFalse = std::stol(l.substr(PREFIX_IF_FALSE_THROW_TO_MONKEY.size()));
     }
 
     std::getline(in, l);
@@ -143,15 +144,44 @@ int computeLevelOfMonkeyBusiness(const std::string &filename)
   }
 #endif
 
-  for (size_t round = 0; round < 20; ++round) {
-    for (Monkey &m : monkeys) {
-      while (m.items.size() > 0) {
-        m.inspectAndTest(monkeys);
-      }
-    }
+  long productOfAllTestDivisors = 1;
+  for (Monkey &m : monkeys) {
+    productOfAllTestDivisors *= m.testDivisor;
   }
 
-  std::vector<int> itemInspectionCounts;
+  for (long round = 0; round < totalRounds; ++round) {
+    for (Monkey &m : monkeys) {
+      while (m.items.size() > 0) {
+        m.inspectAndTest(monkeys, worryDivisor, productOfAllTestDivisors);
+      }
+    }
+
+#ifdef VERBOSE
+    if (
+      ((round+1) == 1) ||
+      ((round+1) == 20) ||
+      ((round+1) == 1000) ||
+      ((round+1) == 2000) ||
+      ((round+1) == 3000) ||
+      ((round+1) == 4000) ||
+      ((round+1) == 5000) ||
+      ((round+1) == 6000) ||
+      ((round+1) == 7000) ||
+      ((round+1) == 8000) ||
+      ((round+1) == 9000) ||
+      ((round+1) == 10000)
+    ) {
+      std::cout << "== After round " << (round+1) << " ==" << std::endl;
+      for (size_t i=0; i < monkeys.size(); ++i) {
+        Monkey &m = monkeys.at(i);
+        std::cout << "Monkey " << i << " inspected items " << m.itemInspectionCount << " times." << std::endl;
+      }
+      std::cout << std::endl;
+    }
+#endif
+  }
+
+  std::vector<long> itemInspectionCounts;
   for (Monkey &m : monkeys) {
     itemInspectionCounts.push_back(m.itemInspectionCount);
   }
@@ -159,13 +189,13 @@ int computeLevelOfMonkeyBusiness(const std::string &filename)
 
 #ifdef VERBOSE
   std::cout << "[debug] item inspection counts ";
-  for (int &i : itemInspectionCounts) {
+  for (long &i : itemInspectionCounts) {
     std::cout << i << " ";
   }
   std::cout << std::endl;
 #endif
 
-  const int levelOfMonkeyBusiness = itemInspectionCounts.at(0) * itemInspectionCounts.at(1);
+  const long levelOfMonkeyBusiness = itemInspectionCounts.at(0) * itemInspectionCounts.at(1);
 
 #ifdef VERBOSE
   std::cout << "[debug] level of monkey business " << levelOfMonkeyBusiness << std::endl;
@@ -176,9 +206,11 @@ int computeLevelOfMonkeyBusiness(const std::string &filename)
 
 int main()
 {
-  assert(computeLevelOfMonkeyBusiness(FILENAME_EXAMPLE) == 10605);
+  assert(computeLevelOfMonkeyBusiness(FILENAME_EXAMPLE, 20, 3) == 10605);
+  assert(computeLevelOfMonkeyBusiness(FILENAME_EXAMPLE, 10000, 1) == 2713310158);
 
-  std::cout << "level of monkey business:" << std::endl << computeLevelOfMonkeyBusiness(FILENAME_INPUT) << std::endl;
+  std::cout << "level of monkey business (part 1):" << std::endl << computeLevelOfMonkeyBusiness(FILENAME_INPUT, 20, 3) << std::endl;
+  std::cout << "level of monkey business (part 2):" << std::endl << computeLevelOfMonkeyBusiness(FILENAME_INPUT, 10000, 1) << std::endl;
 
   return 0;
 }
