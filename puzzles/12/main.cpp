@@ -14,7 +14,7 @@ const std::string FILENAME_INPUT{"puzzles/12/input.txt"};
 const char START{'S'};
 const char END{'E'};
 const char MOVED_UP{'^'};
-const char MOVED_DOWN{'v'};
+const char MOVED_DOWN{'V'}; // Note: lowercase 'v' is an elevation...
 const char MOVED_LEFT{'<'};
 const char MOVED_RIGHT{'>'};
 const char UNVISITED{'.'};
@@ -148,6 +148,23 @@ bool canMove(const std::vector<std::vector<char>> &grid, const Point &s, const D
 std::vector<std::deque<Point>> findAllPossiblePaths(const std::vector<std::vector<char>> &grid, const Point &s, const Point &e)
 {
   std::vector<std::deque<Point>> possiblePaths;
+
+#ifdef VERBOSE
+  static size_t iteration = std::numeric_limits<size_t>::max();
+  iteration++;
+  if ((iteration % 100000) == 0) {
+    std::cout << "findAllPossiblePaths iteration = " << iteration << std::endl;
+
+    std::cout << std::endl;
+    for (size_t row=0; row < grid.size(); ++row) {
+      for (size_t col=0; col < grid.back().size(); ++col) {
+        std::cout << grid.at(row).at(col);
+      }
+      std::cout << std::endl;
+    }
+    std::cout << std::endl;
+  }
+#endif
 
   // try up
   if (canMove(grid, s, Direction::UP)) {
